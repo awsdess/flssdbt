@@ -1,5 +1,6 @@
 from flask import Flask, request
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -31,13 +32,32 @@ def handle_post():
     return "OK", 200
 
 # ============================================================
-# 🔥 ЭТОТ МАРШРУТ НУЖЕН ДЛЯ HEALTH CHECK — ДОБАВЬ ЕГО!
+# 🔥 Health check для Render — ЭТО ВАЖНО!
 # ============================================================
-@app.route("/health", methods=["GET"])
+@app.route("/health", methods=["GET", "HEAD"])
 def health():
     return "OK", 200
 
+# ============================================================
+# 🔥 HEAD-запросы на корень — тоже нужны для мониторинга
+# ============================================================
+@app.route("/", methods=["HEAD"])
+def head_root():
+    return "", 200
+
+@app.route("/", methods=["GET"])
+def index():
+    return """
+    <h2>✅ Сервис работает!</h2>
+    <p>Отправляйте POST-запросы с данными на этот URL.</p>
+    <p>Пример:</p>
+    <pre>
+    curl -X POST https://flssdbt.onrender.com/ \\
+      -H "Content-Type: application/json" \\
+      -d '{"username": "test"}'
+    </pre>
+    """, 200
+
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
